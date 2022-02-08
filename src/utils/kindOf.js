@@ -1,3 +1,5 @@
+// self 判断类型type的方法
+
 // Inlined / shortened version of `kindOf` from https://github.com/jonschlinkert/kind-of
 function miniKindOf(val) {
   if (val === void 0) return 'undefined'
