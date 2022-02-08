@@ -10,7 +10,7 @@ const randomString = () =>
   Math.random().toString(36).substring(7).split('').join('.')
 
 const ActionTypes = {
-  INIT: `@@redux/INIT${randomString()}`,
+  INIT: `@@redux/INIT${randomString()}`,  // self 这个方法是redux保留用的，用来初始化reducer的状态
   REPLACE: `@@redux/REPLACE${randomString()}`,
   PROBE_UNKNOWN_ACTION: () => `@@redux/PROBE_UNKNOWN_ACTION${randomString()}`,
 }
