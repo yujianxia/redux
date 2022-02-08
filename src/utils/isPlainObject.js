@@ -4,7 +4,7 @@
  */
 
 
-// self 这个方法判断传入参数的原型是否等于Object.prototype换句话说，判断参数的父类是不是Object。
+// self 这个方法判断传入参数的原型是否等于Object.prototype。换句话说，判断参数的父类是不是Object。
 export default function isPlainObject(obj) {
   if (typeof obj !== 'object' || obj === null) return false
 
