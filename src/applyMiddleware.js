@@ -1,4 +1,5 @@
-// 中间件middleware就是允许我们在dispatch action之后，到达reducer之前，搞点事情。
+// self applyMiddleware主要作用：
+// self 就是允许我们在调用原始dispatch之后，到达reducer之前。重写dispatch方法，中间件通过链式执行新的dispatch方法，最后再将数据返回到原始dispatch方法中。来实现异步等操作。
 
 import compose from './compose'
 
@@ -19,12 +20,18 @@ import compose from './compose'
  * @returns {Function} A store enhancer applying the middleware. 应用中间件的存储增强器。
  */
 
-// self 参数 ** middlewares 主要是包装store的dispatch方法 **。可以同时传入多个middleWare组合到一起使用，形成 middleware链。
-// self 每个middleware接受Store的dispatch和getState 函数作为命名参数，并返回一个函数。
+// self 参数 ** middlewares（中间件）主要是包装store的dispatch方法 **。可以同时传入多个middleWare组合到一起使用，形成 middleware链。
+// self 每个middleware接受Store的dispatch和getState 函数作为命名参数，并返回一个以createStore为参数的函数。
 
 export default function applyMiddleware(...middlewares) {
+  // self applyMiddleware的使用方法： 
+  // self const store = createStore( reducer, applyMiddleware([...中间件]))。
+  // self applyMiddleware([...中间件]) 的返回值是一个以createStore为参数的函数，实际上这个函数会在 createStore.js 中执行 ** enhancer(createStore)(reducer, preloadedState) **)，
   return (createStore) => (...args) => {
-    const store = createStore(...args) // 原始的store 此时的dispatch 就是原始的dispatch
+    // self 原始的store 此时的dispatch 就是原始的dispatch（和createStore.js中的createStore方法一样）
+    const store = createStore(...args)
+    
+    // self 声明了一个原始的dispatch，如果在中间件的调用过程中出现了错误，则抛出错误
     let dispatch = () => {
       throw new Error(
         'Dispatching while constructing your middleware is not allowed. ' +
@@ -32,19 +39,47 @@ export default function applyMiddleware(...middlewares) {
       )
     }
 
+    // self 在返回store以前，中间件将最重要的两个方法 getState/dispatch 整合出来，并传递给中间件使用
     const middlewareAPI = {
       getState: store.getState,
       dispatch: (...args) => dispatch(...args),
     }
+    /*
+      中间件标准格式(所以middlewareAPI必须包含两个方法):
+      let logger1 = ({ dispatch, getState }) => next => action => {
+        ...     
+        let result = next(action)
+        ...
+        return result
+      }
+    */
+
+    /*
+      middleware(middlewareAPI)之后是这样的格式 
+      let m =  next => action => {
+        ...     
+        let result = next(action)
+        ...
+        return result
+      }
+    */
+
+    // self 把middlewareAPI依次传递给 middleware（中间件），让它们有控制权，并且返回一个如上格式的数组 [m,m1,m2,...]
     const chain = middlewares.map((middleware) => middleware(middlewareAPI))
+
+    // self compose(...chain)(store.dispatch)中 chain参数：中间件的调用链  store.dispatch参数：原始的dispatch函数。等到chain中的链式调用完成之后调用
+    // self 通过compose的包装chain（链），生成一个新的dispatch方法（原dispatch返回active，新dispatch返回）
+    // self 中间件调用的dispatch就是这新的dispatch方法 中间件就会一个一个执行完逻辑后, 将执行权给下一个, 直到原始的store.dispacth, 最后计算出新的state。（这就是中间件实现异步的核心）
     dispatch = compose(...chain)(store.dispatch)
 
+    // self 中间件处理完以后，返回一个新的store，只是重写了dispatch方法。
     return {
       ...store,
       dispatch,
     }
   }
 }
+
 
 // self applyMiddleware执行的过程：
 // 第一步：通过传入的createStore创建了一个store

@@ -45,7 +45,7 @@ import { kindOf } from './utils/kindOf'
 // self 函数createStore接受了三个参数（reducer、preloadedState、enhancer）
 // self reducer 就是我们常用的处理数据的纯函数，reducer会根据传入的state和action，返回新的state。
 // self preloadedState 就是初始状态
-// self enhancer 的意思是增强器，其实就是增强redux功能的函数。
+// self enhancer 的意思是增强器，其实就是增强redux功能的函数。(其实就是applyMiddleware的返回值)
 export default function createStore(reducer, preloadedState, enhancer) {
   if (
     (typeof preloadedState === 'function' && typeof enhancer === 'function') || // self preloadedState和enhancer同时为函数。报错
