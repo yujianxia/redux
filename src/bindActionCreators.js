@@ -27,7 +27,7 @@ boundActions.add({
 let boundAdd = bindActionCreators(actionCreaters.add, store.dispatch)
 boundAdd({
   id: 13,
-  content: '陪媳妇'
+  content: '打豆豆'
 })
 */
 import { kindOf } from './utils/kindOf'
